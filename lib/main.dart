@@ -2,7 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 // Sự kiện để tăng/giảm giá trị
-enum CounterEvent { increment, decrement }
+sealed class CounterEvent {}
+
+class IncrementEvent extends CounterEvent {}
+
+class DecrementEvent extends CounterEvent {}
 
 void main() {
   runApp(const MyApp());
@@ -21,7 +25,7 @@ class MyApp extends StatelessWidget {
       ),
       home: BlocProvider(
         create: (context) =>
-            CounterCubit(), // Tạo một instance mới của CounterCubit
+            CounterBloc(), // Tạo một instance mới của CounterCubit
         child: const MyHomePage(), // truyền widget cho Cubit
       ),
       debugShowCheckedModeBanner: false,
@@ -37,67 +41,58 @@ class MyHomePage extends StatelessWidget {
     return SafeArea(
         child: Scaffold(
             appBar: AppBar(
-              title: const Center(child: 
-              Text('DEMO BLOC', 
-              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)
-              )),
+              title: const Center(
+                  child: Text('DEMO BLOC',
+                      style: TextStyle(
+                          color: Colors.white, fontWeight: FontWeight.bold))),
               backgroundColor: Colors.blueAccent,
             ),
-            body: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-             const Expanded(child: SizedBox(height: 10)),
-             Expanded(child: BlocBuilder<CounterCubit, int>(
+            body:
+                Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+              const Expanded(child: SizedBox(height: 10)),
+              Expanded(child: BlocBuilder<CounterBloc, int>(
                 builder: (BuildContext context, int state) {
                   return Text(
                     '$state',
                     style: const TextStyle(
-                        fontSize: 100, 
+                        fontSize: 100,
                         fontWeight: FontWeight.bold,
-                        color: Colors.blue
-                        ),
+                        color: Colors.blue),
                   );
                 },
-              )
-              ),
+              )),
               const SizedBox(height: 150),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
+              Row(mainAxisAlignment: MainAxisAlignment.center, children: [
                 ElevatedButton.icon(
                     onPressed: () {
-                      context.read<CounterCubit>().onEvent(CounterEvent.increment);
+                      context.read<CounterBloc>().add(IncrementEvent());
                     },
                     icon: const Icon(Icons.add),
                     label: const Text('Increment')),
                 const SizedBox(width: 20),
                 ElevatedButton.icon(
                     onPressed: () {
-                      context.read<CounterCubit>().onEvent(CounterEvent.decrement);
+                      context.read<CounterBloc>().add(DecrementEvent());
                     },
                     icon: const Icon(Icons.add),
                     label: const Text('Decrement'))
               ]),
               const SizedBox(height: 10),
-            ])
-            )
-            );
+            ])));
   }
 }
 
 // Cubit để quản lý trạng thái của biến đếm
-class CounterCubit extends Cubit<int> {
-  CounterCubit() : super(0);
+class CounterBloc extends Bloc<CounterEvent, int> {
+  CounterBloc() : super(0) {
+    on<IncrementEvent>((event, emit) {
+      var newState = state + 1;
+      emit(newState);
+    });
 
-  // Phương thức để xử lý các sự kiện và cập nhật trạng thái tương ứng
-  void onEvent(CounterEvent event) {
-    switch (event) {
-      case CounterEvent.increment:
-        emit(state + 1);
-        break;
-      case CounterEvent.decrement:
-        emit(state - 1);
-        break;
-    }
+    on<DecrementEvent>((event, emit) {
+      var newState = state - 1;
+      emit(newState);
+    });
   }
 }
