@@ -8,6 +8,21 @@ class IncrementEvent extends CounterEvent {}
 
 class DecrementEvent extends CounterEvent {}
 
+// Bloc để quản lý trạng thái của biến đếm
+class CounterBloc extends Bloc<CounterEvent, int> {
+  CounterBloc() : super(0) {
+    on<IncrementEvent>((event, emit) {
+      var newState = state + 1;
+      emit(newState);
+    });
+
+    on<DecrementEvent>((event, emit) {
+      var newState = state - 1;
+      emit(newState);
+    });
+  }
+}
+
 void main() {
   runApp(const MyApp());
 }
@@ -25,8 +40,8 @@ class MyApp extends StatelessWidget {
       ),
       home: BlocProvider(
         create: (context) =>
-            CounterBloc(), // Tạo một instance mới của CounterCubit
-        child: const MyHomePage(), // truyền widget cho Cubit
+            CounterBloc(), // Tạo một instance mới của CounterBloc
+        child: const MyHomePage(), // truyền widget cho Bloc
       ),
       debugShowCheckedModeBanner: false,
     );
@@ -65,7 +80,9 @@ class MyHomePage extends StatelessWidget {
               Row(mainAxisAlignment: MainAxisAlignment.center, children: [
                 ElevatedButton.icon(
                     onPressed: () {
-                      context.read<CounterBloc>().add(IncrementEvent());
+                      context
+                          .read<CounterBloc>()
+                          .add(IncrementEvent()); //truyền event cho bloc
                     },
                     icon: const Icon(Icons.add),
                     label: const Text('Increment')),
@@ -79,20 +96,5 @@ class MyHomePage extends StatelessWidget {
               ]),
               const SizedBox(height: 10),
             ])));
-  }
-}
-
-// Cubit để quản lý trạng thái của biến đếm
-class CounterBloc extends Bloc<CounterEvent, int> {
-  CounterBloc() : super(0) {
-    on<IncrementEvent>((event, emit) {
-      var newState = state + 1;
-      emit(newState);
-    });
-
-    on<DecrementEvent>((event, emit) {
-      var newState = state - 1;
-      emit(newState);
-    });
   }
 }
